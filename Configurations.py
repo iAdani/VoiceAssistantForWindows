@@ -20,14 +20,23 @@ load_config()
 
 
 # Change preferred voice
-def change_voice(i):
+def change_voice():
     old = config["voice"]
     with open("config.yaml", "w") as conf:
-        config["voice"] = i
+        config["voice"] = 1 - config["voice"]
         try:
             yaml.safe_dump(config, conf, default_flow_style=False)
         except:
             config["voice"] = old
+
+
+def get_theme():
+    return config["theme"]
+
+
+def get_theme_config():
+    theme = get_theme()
+
 
 
 def get_voice():

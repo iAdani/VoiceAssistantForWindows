@@ -5,6 +5,7 @@ import http.client as client
 
 from Configurations import get_voice as conf_get_voice
 from Executer import execute
+import Controller
 
 # Initialize the recognizer
 r = sr.Recognizer()
@@ -72,7 +73,9 @@ def recognize():
                 # Execute the command
                 stop, response = execute(text)
                 if response is not None:
+                    Controller.set_response(response)
                     answer(response)
+
                 running = not stop
 
         except sr.UnknownValueError:

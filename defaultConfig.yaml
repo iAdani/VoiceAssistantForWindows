@@ -1,1 +1,9 @@
 voice: 0
+theme: "dark"
+theme_selector: "dark"
+
+dark:
+  bg: "#333333"
+
+light:
+  bg: "#DDDDDD"

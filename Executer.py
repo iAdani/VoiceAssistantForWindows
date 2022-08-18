@@ -6,22 +6,18 @@ import calendar
 from Configurations import change_voice, get_voice as conf_get_voice
 
 
-class ExecuteException(Exception):
-    pass
-
-
 # Returns a string with the current time
 def get_time():
     now = datetime.datetime.now()
     if now.minute == 0:
-        return "It's " + str(now.hour)
-    return f"The time is {now.hour} and {now.minute} minutes"
+        return f"It's {now.hour} o'clock."
+    return f"The time is {now.hour} and {now.minute} minutes."
 
 
 # Returns a string with the current date
 def get_date():
     now = datetime.datetime.now()
-    return f"Today is {calendar.month_name[now.month]}, {now.day}"
+    return f"Today is {calendar.month_name[now.month]} {now.day}."
 
 
 # Search for .exe and run it
@@ -45,6 +41,7 @@ def run_app(s):
     return False
 
 
+# Run the program specified in the command
 def open_program(command):
     if "open" in command:
         command.remove("open")
@@ -60,7 +57,7 @@ def open_program(command):
         if run_app(word):
             return True
 
-        # For .exe on disk
+        # For regular .exe on disk
         if run_exe(word, "C:\Program Files"):
             return True
         if run_exe(word, "C:\\"):
@@ -71,17 +68,18 @@ def open_program(command):
 # Check if client said hi and response
 def check_for_hi(command):
     if any(word in command for word in ["hi", "hello"]):
-        return "hello!"
+        return "Hello!"
     if all(word in command for word in ["what's", "up"]):
-        return "can't get any better!"
+        return "Can't get any better!"
     if all(word in command for word in ["what", "is", "up"]):
-        return "i'm fine"
+        return "I'm fine."
     if all(word in command for word in ["what", "is", "app"]):
-        return "i'm OK"
+        return "I'm OK."
     if all(word in command for word in ["how", "are", "you"]):
-        return "i'm fine, thanks!"
+        return "I'm fine. Thanks!"
 
 
+# Check if client said bye, thanks or used bad language and response
 def check_for_bye(command):
     # Bye
     if any(word in command for word in ["bye", "goodbye"]):
@@ -106,6 +104,7 @@ def check_for_bye(command):
         return "That is some bad language!"
 
 
+# Execute the command
 def execute(command):
     # Check for bye, thanks or bad language
     cfb = check_for_bye(command)
@@ -120,8 +119,8 @@ def execute(command):
     # For running a program
     if any(word in command for word in ["open", "run"]):
         if open_program(command):
-            return True, "OK, Here is " + ' '.join(command)
-        return False, "Sorry, I can't find that program. Try again"
+            return True, "OK, Here is " + ' '.join(command) + "."
+        return False, "Sorry, I can't find that program.\nTry again."
 
     # For telling the time or date
     if "time" in command and any(word in command for word in ["what", "what's", "tell"]):
@@ -134,13 +133,14 @@ def execute(command):
         if "female" in command or "woman" in command:
             if conf_get_voice() == 1:
                 return True, "OK, But I am already a female!"
-            change_voice(1)
+            change_voice()
             return True, "Voice has been changed."
         if "male" in command or "man" in command:
             if conf_get_voice() == 0:
                 return True, "OK, But I am already a male!"
-            change_voice(0)
+            change_voice()
             return True, "Voice has been changed."
-        return False, "Please specify the voice you prefer and try again."
+        change_voice()
+        return True, "Voice has been changed."
 
     return False, "Sorry, I didn't understand that."

@@ -83,16 +83,33 @@ import yaml
 #             return True
 #     return False
 
+from observed import observable_function
+import time
+
+
+# @observable_function
+# def hi():
+#     print("hi")
+#     time.sleep(2)
+#     print("bye")
+#
+#
+# def observer():
+#     print("SUP")
+
+from tkinter import Tk, font
 
 if __name__ == '__main__':
-    recognize()
+    # recognize()
+    root = Tk()
+    print(font.families())
     # apps = os.popen("powershell -ExecutionPolicy Bypass -Command get-StartApps").read().split()
     # apps = list(filter(None, apps))
     # lst = []
     # e = ''
     # for app in apps:
     #     if len(app) < 15:
-    #         e = e + app + ' '
+
     #     else:
     #         lst.append(e[:-1])
     #         e = ''
