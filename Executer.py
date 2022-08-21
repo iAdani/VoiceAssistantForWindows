@@ -88,6 +88,8 @@ def check_for_bye(command):
         return "See you later."
     if all(word in command for word in ["talk", "later"]):
         return "Talk to you later."
+    if "stop" in command:
+        return "OK, I stopped."
 
     # Thanks
     if "thanks" in command:

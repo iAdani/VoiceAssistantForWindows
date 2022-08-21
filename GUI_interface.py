@@ -1,68 +1,94 @@
-import sys
-import tkinter
+import os
 from tkinter import *
-from time import sleep
+import psutil
 from threading import Thread
 from observed import observable_function
-from PIL import Image
 
-import Controller
-
-running = False
-t = Thread()
+from Recognizer import Recognizer
 
 
-def run():
-    # Init
-    root = Tk()
-    root.iconbitmap("Images/logo.ico")
-    root.title("Voice Assistant")
-    root.geometry("300x350")
+# Kills the process to avoid alive threads from keep running after exit
+def kill_process():
+    pid = os.getpid()
+    p = psutil.Process(pid)
+    p.terminate()
 
-    # Images
-    mic_img = PhotoImage(file='Images\mic.png')
-    mute_img = PhotoImage(file='Images\mute.png')
 
-    # On close handler
-    def on_close():
-        root.destroy()
+class GuiInterface:
 
-    root.protocol("WM_DELETE_WINDOW", on_close)
+    def __init__(self):
+        self.recognizer = Recognizer(self.set_response, self.set_input, self.set_state)
+        self.recognizer.recognize.add_observer(self.stop_listening)
+        self.state = 0
+        self.running = False
+        self.t = Thread()
+        self.widgets = {}
+        self.root = Tk()
 
-    def stop_listening(arg):
-        global running
-        running = False
-        listen_button.configure(image=mute_img)
+        # Images
+        self.mic_img = PhotoImage(file=r'Images\mic.png')
+        self.mute_img = PhotoImage(file=r'Images\mute.png')
 
-    def start_listening():
-        global running, t
-        if running is True:
+        self.root_init()
+        self.root.mainloop()
+
+    def root_init(self):
+        self.root.iconbitmap("Images/logo.ico")
+        self.root.title("Voice Assistant")
+        self.root.geometry("450x350")
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # Creating widgets
+        self.widgets['listen_button'] = Label(self.root, image=self.mute_img)
+        self.widgets['input_label'] = Label(self.root, text="", font=('Mangal', 10), pady=10)
+        self.widgets['response_label'] = Label(self.root, text="Click the microphone to start.", font=('Mangal', 11),
+                                               pady=10, padx=10)
+
+        self.widgets['frame'] = Frame(self.root)
+
+        # Displaying on the screen
+        self.widgets['listen_button'].pack(padx=50, pady=15)
+        self.widgets['listen_button'].bind("<Button-1>", self.start_listening)
+        self.widgets['input_label'].pack()
+        self.widgets['response_label'].pack()
+        self.widgets['frame'].pack(ipadx=10, ipady=10, expand=True)
+
+    # Window on close handler
+    def on_close(self):
+        self.root.destroy()
+        if self.t.is_alive():
+            kill_process()
+
+    def stop_listening(self, arg):
+        self.running = False
+        self.widgets['listen_button'].configure(image=self.mute_img)
+
+    def listen(self):
+        self.recognizer.recognize()
+
+    def start_listening(self, arg):
+        if self.t.is_alive():
             return
-        running = True
-        listen_button.configure(image=mic_img)
-        set_response("Listening...")
-        t = Thread(target=Controller.listen, args=(set_response,))
-        Controller.listen.add_observer(stop_listening)
-        t.start()
+        self.running = True
+        self.widgets['listen_button'].configure(image=self.mic_img)
+        self.set_response("Listening...")
+        self.t = Thread(target=self.recognizer.recognize, args=(self.recognizer,))
+        self.t.start()
 
-    def set_response(text):
-        response_label.configure(text=text)
+    # Set the system's response to the user
+    def set_response(self, text):
+        self.widgets['response_label'].configure(text=text)
 
-    def change_theme():
-        pass
+    # Set the user's input to display
+    def set_input(self, text):
+        self.widgets['input_label'].configure(text=text)
 
-    # Creating a label widget
-    response_label = Label(root, text="Click on the microphone to start.", font=('Mangal', 11), pady=10, padx=10)
-    listen_button = Label(root, image=mute_img)
-    # Shoving it into the screen
-    listen_button.pack(padx=50, pady=15)
-    listen_button.bind("<Button-1>", lambda e: start_listening())
-    response_label.pack()
-    frame = tkinter.Frame(root)
-    frame.pack(ipadx=10, ipady=10, expand=True)
+    # Set the current system state
+    @observable_function
+    def set_state(self, state):
+        self.state = state
 
-    root.mainloop()
-
-
-if __name__ == "__main__":
-    run()
+    def on_state_change(self):
+        match self.state:
+            case 1:
+                pass
