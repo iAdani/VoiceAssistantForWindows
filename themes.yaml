@@ -1,0 +1,14 @@
+light:
+  bg: "#E7E7E7"
+  rfg: "black"
+  ifg: "#333333"
+
+dark:
+  bg: "#333333"
+  rfg: "white"
+  ifg: "#E7E7E7"
+
+custom:
+  bg: "#E7E7E7"
+  rfg: "black"
+  ifg: "#333333"

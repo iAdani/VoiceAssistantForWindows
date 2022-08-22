@@ -3,7 +3,7 @@ import os
 import datetime
 import calendar
 
-from Configurations import change_voice, get_voice as conf_get_voice
+import Configurations as config
 
 
 # Returns a string with the current time
@@ -37,7 +37,7 @@ def run_app(s):
         test = list(filter(lambda e: len(e) > 12, source))
         if test is None or len(test) == 1:
             os.system('start explorer shell:appsfolder\\' + source[-1])
-            return True;
+            return True
     return False
 
 
@@ -58,9 +58,9 @@ def open_program(command):
             return True
 
         # For regular .exe on disk
-        if run_exe(word, "C:\Program Files"):
+        if run_exe(word, r"C:\Program Files"):
             return True
-        if run_exe(word, "C:\\"):
+        if run_exe(word, r"C:\\"):
             return True
     return False
 
@@ -130,19 +130,31 @@ def execute(command):
     if "date" in command and any(word in command for word in ["what", "what's", "tell"]):
         return True, get_date()
 
-    # For voice change
-    if "voice" in command and any(word in command for word in ["change", "switch", "swap"]):
-        if "female" in command or "woman" in command:
-            if conf_get_voice() == 1:
-                return True, "OK, But I am already a female!"
-            change_voice()
+    # For configurations
+    if any(word in command for word in ["change", "switch", "swap"]):
+
+        # For voice change
+        if "voice" in command:
+            if any(word in command for word in ["female", "woman", "women"]):
+                if config.get_voice() == 1:
+                    return True, "OK, But I am already a female!"
+            if any(word in command for word in ["male", "man", "men"]):
+                if config.get_voice() == 0:
+                    return True, "OK, But I am already a male!"
+            config.change_voice()
             return True, "Voice has been changed."
-        if "male" in command or "man" in command:
-            if conf_get_voice() == 0:
-                return True, "OK, But I am already a male!"
-            change_voice()
-            return True, "Voice has been changed."
-        change_voice()
-        return True, "Voice has been changed."
+
+        # For theme change
+        if any(word in command for word in ["theme", "mode"]):
+            current_theme = config.get_theme_type()
+            if "dark" in command or "black" in command:
+                if current_theme == "dark":
+                    return True, "It's already dark."
+            if "light" in command or "white" in command:
+                if current_theme == "light":
+                    return True, "It's already light."
+            new_theme = "light" if current_theme == "dark" else "dark"
+            config.set_theme_type(new_theme)
+            return True, "Theme has been changed."
 
     return False, "Sorry, I didn't understand that."

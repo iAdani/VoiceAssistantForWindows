@@ -33,11 +33,12 @@ def parse(command):
 
 class Recognizer:
 
-    def __init__(self, response_setter, input_setter, state_setter):
+    def __init__(self, setters):
         # Set the setters
-        self.response_setter = response_setter
-        self.input_setter = input_setter
-        self.state_setter = state_setter
+        self.response_setter = setters['response']
+        self.input_setter = setters['input']
+        self.state_setter = setters['state']
+        self.theme_update = setters['theme']
 
         # Initialize the recognizer
         self.r = sr.Recognizer()
@@ -86,6 +87,8 @@ class Recognizer:
                     # Execute the command
                     stop, response = execute(text)
                     if response is not None:
+                        if response == "Theme has been changed.":
+                            self.theme_update()
                         self.response_setter(response)
                         self.answer(response)
 
@@ -94,7 +97,3 @@ class Recognizer:
 
             except sr.UnknownValueError:
                 pass
-
-    # response = "Sorry, I didn't hear you."
-    # Controller.set_response(response)
-    # answer(response)

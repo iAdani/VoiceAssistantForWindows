@@ -5,6 +5,7 @@ from threading import Thread
 from observed import observable_function
 
 from Recognizer import Recognizer
+import Configurations
 
 
 # Kills the process to avoid alive threads from keep running after exit
@@ -17,7 +18,9 @@ def kill_process():
 class GuiInterface:
 
     def __init__(self):
-        self.recognizer = Recognizer(self.set_response, self.set_input, self.set_state)
+        setters = { 'response': self.set_response, 'input': self.set_input,
+                    'state': self.set_state, 'theme': self.update_theme }
+        self.recognizer = Recognizer(setters)
         self.recognizer.recognize.add_observer(self.stop_listening)
         self.state = 0
         self.running = False
@@ -30,12 +33,13 @@ class GuiInterface:
         self.mute_img = PhotoImage(file=r'Images\mute.png')
 
         self.root_init()
+        self.update_theme()
         self.root.mainloop()
 
     def root_init(self):
         self.root.iconbitmap("Images/logo.ico")
         self.root.title("Voice Assistant")
-        self.root.geometry("450x350")
+        self.root.geometry("430x380")
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # Creating widgets
@@ -44,14 +48,11 @@ class GuiInterface:
         self.widgets['response_label'] = Label(self.root, text="Click the microphone to start.", font=('Mangal', 11),
                                                pady=10, padx=10)
 
-        self.widgets['frame'] = Frame(self.root)
-
         # Displaying on the screen
         self.widgets['listen_button'].pack(padx=50, pady=15)
         self.widgets['listen_button'].bind("<Button-1>", self.start_listening)
         self.widgets['input_label'].pack()
         self.widgets['response_label'].pack()
-        self.widgets['frame'].pack(ipadx=10, ipady=10, expand=True)
 
     # Window on close handler
     def on_close(self):
@@ -92,3 +93,11 @@ class GuiInterface:
         match self.state:
             case 1:
                 pass
+
+    def update_theme(self):
+        t = Configurations.get_theme_type()
+        config = Configurations.get_theme_config(t)
+        self.root.configure(background=config['bg'])
+        self.widgets["listen_button"].configure(bg=config['bg'])
+        self.widgets["input_label"].configure(bg=config['bg'], fg=config['ifg'])
+        self.widgets["response_label"].configure(bg=config['bg'], fg=config['rfg'])
